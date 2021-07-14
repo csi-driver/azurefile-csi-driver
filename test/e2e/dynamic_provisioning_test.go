@@ -133,6 +133,7 @@ var _ = ginkgo.Describe("Dynamic Provisioning", func() {
 		if !isUsingInTreeVolumePlugin {
 			scParameters["secretName"] = "sercet-test"
 			scParameters["enableLargeFileshares"] = "true"
+			scParameters["networkEndpointType"] = "privateEndpoint"
 		}
 		test := testsuites.DynamicallyProvisionedCmdVolumeTest{
 			CSIDriver:              testDriver,
@@ -320,6 +321,7 @@ var _ = ginkgo.Describe("Dynamic Provisioning", func() {
 			StorageClassParameters: map[string]string{
 				"skuName":               "Premium_LRS",
 				"enableLargeFileshares": "true",
+				"networkEndpointType":   "privateEndpoint",
 			},
 		}
 		test.Run(cs, ns)
