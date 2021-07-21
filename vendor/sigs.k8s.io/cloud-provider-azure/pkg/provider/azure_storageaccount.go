@@ -315,6 +315,10 @@ func (az *Cloud) createPrivateDNSZone(ctx context.Context) error {
 	location := LocationGlobal
 	privateDNSZone := privatedns.PrivateZone{Location: &location}
 	if err := az.privatednsclient.CreateOrUpdate(ctx, az.ResourceGroup, PrivateDNSZoneName, privateDNSZone, true); err != nil {
+		if strings.Contains(err.Error(), "exists already") {
+			klog.V(2).Infof("private dns zone(%s) in resourceGroup (%s) already exists", PrivateDNSZoneName, az.ResourceGroup)
+			return nil
+		}
 		return err
 	}
 	return nil
@@ -480,8 +484,11 @@ func isEnableNfsV3PropertyEqual(account storage.Account, accountOptions *Account
 }
 
 func isPrivateEndpointAsExpected(account storage.Account, accountOptions *AccountOptions) bool {
-	if accountOptions.CreatePrivateEndpoint && (account.PrivateEndpointConnections == nil || len(*account.PrivateEndpointConnections) == 0) {
-		return false
+	if accountOptions.CreatePrivateEndpoint && account.PrivateEndpointConnections != nil && len(*account.PrivateEndpointConnections) > 0 {
+		return true
 	}
-	return true
+	if !accountOptions.CreatePrivateEndpoint && (account.PrivateEndpointConnections == nil || len(*account.PrivateEndpointConnections) == 0) {
+		return true
+	}
+	return false
 }
